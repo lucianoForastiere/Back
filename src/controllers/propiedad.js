@@ -28,7 +28,6 @@ const getPropiedades = async (req, res) => {
     }
 };
 
-
 //trae propiedad por id
 const getPropiedad = async(req, res) => {
     const { id } = req.params;
