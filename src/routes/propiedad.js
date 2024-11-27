@@ -6,7 +6,6 @@ const upload = require('../config/multer');
 
 const router = express.Router();
 
-//rutas
 
 //trae props
 router.get('/', getPropiedades);
