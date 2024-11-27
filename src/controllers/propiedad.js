@@ -2,29 +2,45 @@ const Propiedad = require("../models/propiedad");
 
 
 
-const getPropiedades = async (req, res) => {
-    const limit = Number(req.query.limit) || 12; // Por defecto 12
-    const offset = Number(req.query.offset) || 0; // Por defecto 0
-    const operacion = req.query.operacion || null;
-    const tipo = req.query.tipo || null;
-    const precioMin = req.query.precioMin ? Number(req.query.precioMin) : null;
-    const precioMax = req.query.precioMax ? Number(req.query.precioMax) : null;
+const Propiedad = require("../models/propiedad");
 
+const getPropiedades = async (req, res) => {
+    const { limit, offset, operacion, tipo, precioMin, precioMax } = req.query;
     try {
+        let propiedades;
         let filtros = {};
 
-        if (operacion) filtros["operacion.tipoOperacion"] = operacion;
-        if (tipo) filtros.tipoPropiedad = tipo;
-        if (precioMin) filtros["operacion.precio"] = { ...filtros["operacion.precio"], $gte: precioMin };
-        if (precioMax) filtros["operacion.precio"] = { ...filtros["operacion.precio"], $lte: precioMax };
+        // Filtros
+        // Por operacion
+        if (operacion) {
+            filtros["operacion.tipoOperacion"] = operacion;
+        }
+        // Tipo
+        if (tipo) {
+            filtros.tipoPropiedad = tipo;
+        }
+        // Precio MIN
+        if (precioMin) {
+            filtros["operacion.precio"] = { ...filtros["operacion.precio"], $gte: Number(precioMin) };
+        }
+        // Precio MAX
+        if (precioMax) {
+            filtros["operacion.precio"] = { ...filtros["operacion.precio"], $lte: Number(precioMax) };
+        }
+        // Sin filtros
+        if (!operacion && !tipo && !precioMin && !precioMax) {
+            filtros = {};
+        }
 
-        const propiedades = await Propiedad.find(filtros).skip(offset).limit(limit).exec();
-        const totPropsFiltradas = await Propiedad.countDocuments(filtros);
+        propiedades = await Propiedad.find(filtros)
+            .skip(Number(offset) || 0)
+            .limit(Number(limit) || 12)
+            .exec();
 
-        res.status(200).json({ totPropsFiltradas, propiedades });
+        res.json(propiedades);
     } catch (error) {
-        console.error("Error en getPropiedades:", error);
-        res.status(500).json({ mensaje: "Error del servidor", error: error.message });
+        console.error(error);
+        res.status(500).json({ error: error.message });
     }
 };
 
