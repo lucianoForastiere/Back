@@ -2,52 +2,32 @@ const Propiedad = require("../models/propiedad");
 
 
 
-const getPropiedades = async(req, res) => {
-    const { limit, offset, operacion, tipo, precioMin, precioMax } = req.query; 
+const getPropiedades = async (req, res) => {
+    const limit = Number(req.query.limit) || 12; // Por defecto 12
+    const offset = Number(req.query.offset) || 0; // Por defecto 0
+    const operacion = req.query.operacion || null;
+    const tipo = req.query.tipo || null;
+    const precioMin = req.query.precioMin ? Number(req.query.precioMin) : null;
+    const precioMax = req.query.precioMax ? Number(req.query.precioMax) : null;
+
     try {
-        let propiedades;
         let filtros = {};
 
-        //filtros
-        //por operacion
-        if(operacion){
-            filtros["operacion.tipoOperacion"] = operacion; 
-        }
-        //tipo
-        if(tipo){
-            filtros.tipoPropiedad = tipo;
-        }
-        //precio MIN
-        if(precioMin){
-            filtros["operacion.precio"] = {...filtros["operacion.precio"], $gte: Number(precioMin)};
-        }
-        //precio MAX
-        if(precioMax){
-            filtros["operacion.precio"] = {...filtros["operacion.precio"], $lte: Number(precioMax)};
-        }
-        //sin filtros
-        if(!operacion && !tipo && !precioMin && !precioMax){
-            filtros = {};
-        }
+        if (operacion) filtros["operacion.tipoOperacion"] = operacion;
+        if (tipo) filtros.tipoPropiedad = tipo;
+        if (precioMin) filtros["operacion.precio"] = { ...filtros["operacion.precio"], $gte: precioMin };
+        if (precioMax) filtros["operacion.precio"] = { ...filtros["operacion.precio"], $lte: precioMax };
 
-        propiedades = await Propiedad.find(filtros)
-        .skip(Number(offset) || 0)
-        .limit(Number(limit) || 12)
-        .exec();
-
-        //obtengo el total de props q cumplen con los filtros (sin paginación)
+        const propiedades = await Propiedad.find(filtros).skip(offset).limit(limit).exec();
         const totPropsFiltradas = await Propiedad.countDocuments(filtros);
 
-        //envio las 12 props mas el total de las q cumplen los filtros
-        res.status(200).json({
-            totPropsFiltradas,
-            propiedades
-        });
+        res.status(200).json({ totPropsFiltradas, propiedades });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ mensaje: "Error del servidor" });
+        console.error("Error en getPropiedades:", error);
+        res.status(500).json({ mensaje: "Error del servidor", error: error.message });
     }
 };
+
 
 //trae propiedad por id
 const getPropiedad = async(req, res) => {
@@ -62,8 +42,8 @@ const getPropiedad = async(req, res) => {
         res.status(200).json(propiedad);
     }
     catch (error) {
-        console.log(error);
-        res.status(500).json({ mensaje: "Error del servidor" });
+        console.error("Error en el controlador getPropiedad:", error);
+        res.status(500).json({ mensaje: "Error del servidor", error: error.message });
     }
 };
 
