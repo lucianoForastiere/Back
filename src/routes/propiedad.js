@@ -113,8 +113,9 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
 });
 
 //actualiza
-router.put('/:id', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async (req, res) => {
-    const { id } = req.params;
+router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async (req, res) => {
+    const { _id } = req.params;
+    console.log("id:", _id);
     const {
         tituloPublicacion,
         descripcion,
@@ -138,9 +139,7 @@ router.put('/:id', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), asy
 
     try {
         // Buscar la propiedad por ID
-        const propiedad = await Propiedad.findById(id);
-        if(!propiedad) { return res.status(404).send("Propiedad no encontrada"); }
-
+        const propiedad = await Propiedad.findById(_id);
         if (!propiedad) {
             return res.status(404).send("Propiedad no encontrada");
         }
@@ -177,34 +176,36 @@ router.put('/:id', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), asy
             videoUrl = videoResult;
         }
 
-        // creo la propiedad
-        const newProp = new Propiedad({
-            tituloPublicacion: tituloPublicacion,
-            descripcion: descripcion,
-            tipoPropiedad: tipoPropiedad,
-            expensas: expensas,
-            ubicacion: ubicacion,
-            operacion: operacion,
-            cantPisos: cantPisos,
-            ambientes: ambientes,
-            dormitorios: dormitorios,
-            baños: baños,
+        // Crear el objeto de actualización sin el campo _id
+        const updateData = {
+            tituloPublicacion,
+            descripcion,
+            tipoPropiedad,
+            expensas,
+            ubicacion,
+            operacion,
+            cantPisos,
+            ambientes,
+            dormitorios,
+            baños,
             imagenes: imagenesUrls.length ? imagenesUrls : propiedad.imagenes,
             video: videoUrl || propiedad.video,
-            supCubierta: supCubierta,
-            supSemiCub: supSemiCub,
-            supDescubierta: supDescubierta,
-            supTotal: supTotal,
-            servicios: servicios,
-            estado: estado,
-            antiguedad: antiguedad,
-            cantCocheras: cantCocheras,
-        });
-        //actualizo la propiedad
-        await Propiedad.findByIdAndUpdate({ _id: id }, newProp);
-        
+            supCubierta,
+            supSemiCub,
+            supDescubierta,
+            supTotal,
+            servicios,
+            estado,
+            antiguedad,
+            cantCocheras,
+        };
+
+        // Actualizar la propiedad
+        const updatedPropiedad = await Propiedad.findByIdAndUpdate(_id, updateData, { new: true });
+
         res.status(200).send({
             message: "Propiedad actualizada con éxito",
+            propiedad: updatedPropiedad,
         });
     } catch (error) {
         console.error(error);
@@ -213,11 +214,11 @@ router.put('/:id', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), asy
 });
 
 //elimina propiedad y eliminiar imagenes y video de cloudinary
-router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
+router.delete('/eliminaProp/:_id', async (req, res) => {
+    const { _id } = req.params; 
     try {
         // Buscar la propiedad por ID
-        const propiedad = await Propiedad.findById(id);
+        const propiedad = await Propiedad.findById(_id);
         if (!propiedad) {
             return res.status(404).send("Propiedad no encontrada");
         }
@@ -237,7 +238,7 @@ router.delete('/:id', async (req, res) => {
         }
 
         // Eliminar la propiedad de la base de datos
-        await Propiedad.findByIdAndDelete(id);
+        await Propiedad.findByIdAndDelete(_id);
 
         res.status(200).send({
             message: "Propiedad eliminada con éxito",
