@@ -115,7 +115,7 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
 //actualiza
 router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async (req, res) => {
     const { _id } = req.params;
-    console.log("id:", _id);
+    
     const {
         tituloPublicacion,
         descripcion,
