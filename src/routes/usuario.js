@@ -1,5 +1,5 @@
 const express = require('express');
-const { creaUsuario, getUsuarios, modificaUsuario, eliminaUsuario } = require('../controllers/usuario');
+const { creaUsuario, getUsuarios, getUsuarioPorId, modificaUsuario, eliminaUsuario } = require('../controllers/usuario');
 
 const router = express.Router();
 
@@ -8,6 +8,9 @@ const router = express.Router();
 //trae usuarios
 router.get('/', getUsuarios);
 
+//trae usuario por ID
+router.get('/:_id', getUsuarioPorId);
+
 //crea usuario
 router.post('/crea', creaUsuario);
 
@@ -15,6 +18,6 @@ router.post('/crea', creaUsuario);
 router.put('/edita/:_id', modificaUsuario);
 
 //elimina usuario
-router.delete('/elimina/:_id', eliminaUsuario);
+router.delete('/elimina', eliminaUsuario);
 
 module.exports = router;

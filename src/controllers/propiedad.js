@@ -62,6 +62,8 @@ const getPropiedad = async(req, res) => {
     }
 };
 
+
+
 module.exports = {
     getPropiedades,
     getPropiedad,
