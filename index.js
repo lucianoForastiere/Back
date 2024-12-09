@@ -7,6 +7,8 @@ dotenv.config();
 
 //importo rutas
 const routerPropiedad = require('./src/routes/propiedad');
+const routerUsuario = require('./src/routes/usuario');
+const routerAuth = require('./src/routes/auth');
 
 const app = express();
 
@@ -19,6 +21,8 @@ dbConnection();
 
 //declaro rutas
 app.use('/propiedades', routerPropiedad);
+app.use('/usuarios', routerUsuario);
+app.use('/auth', routerAuth);
 
 //puerto
 const PORT = process.env.PORT || 3002;
