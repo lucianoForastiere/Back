@@ -3,6 +3,7 @@ const Propiedad = require("../models/propiedad");
 
 const getPropiedades = async(req, res) => {
     const { limit, offset, operacion, tipo, precioMin, precioMax } = req.query; 
+    
     try {
         let propiedades;
         let filtros = {};

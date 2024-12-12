@@ -22,7 +22,8 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
         tipoPropiedad,
         expensas,
         ubicacion,
-        operacion,
+        venta,
+        alquiler,
         cantPisos,
         ambientes,
         dormitorios,
@@ -43,7 +44,7 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
             (req.files['imagenes'] || []).map((file) => {
                 return new Promise((resolve, reject) => {
                     const uploadStream = cloudinary.uploader.upload_stream(
-                        { folder: 'propiedades/imagenes' },
+                        { folder: `propiedades/${tituloPublicacion}/imagenes` },
                         (error, result) => {
                             if (error) return reject(error);
                             resolve(result.secure_url);
@@ -59,7 +60,7 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
         if (req.files['video'] && req.files['video'][0]) {
             const videoResult = await new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
-                    { folder: 'propiedades/videos', resource_type: 'video' },
+                    { folder: `propiedades/${tituloPublicacion}/videos`, resource_type: 'video' },
                     (error, result) => {
                         if (error) return reject(error);
                         resolve(result.secure_url);
@@ -82,7 +83,8 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
             tipoPropiedad,
             expensas,
             ubicacion,
-            operacion,
+            venta,
+            alquiler,
             cantPisos,
             ambientes,
             dormitorios,
@@ -114,15 +116,15 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
 
 //actualiza
 router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async (req, res) => {
-    const { _id } = req.params;
-    
+    const { _id } = req.params;    
     const {
         tituloPublicacion,
         descripcion,
         tipoPropiedad,
         expensas,
         ubicacion,
-        operacion,
+        venta,
+        alquiler,
         cantPisos,
         ambientes,
         dormitorios,
@@ -136,7 +138,7 @@ router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'vide
         antiguedad,
         cantCocheras,
     } = JSON.parse(req.body.data); // Parsear los datos del formulario
-
+    
     try {
         // Buscar la propiedad por ID
         const propiedad = await Propiedad.findById(_id);
@@ -144,46 +146,38 @@ router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'vide
             return res.status(404).send("Propiedad no encontrada");
         }
 
-        // Subir imágenes a Cloudinary
+        // Subir imágenes a Cloudinary, pero si ya existen que no se repitan
         const imagenesUrls = await Promise.all(
-            (req.files['imagenes'] || []).map((file) => {
-                return new Promise((resolve, reject) => {
-                    const uploadStream = cloudinary.uploader.upload_stream(
-                        { folder: 'propiedades/imagenes' },
-                        (error, result) => {
-                            if (error) return reject(error);
-                            resolve(result.secure_url);
-                        }
-                    );
-                    uploadStream.end(file.buffer); // Enviar buffer a Cloudinary
-                });
+            (req.files['imagenes'] || []).map(async (file) => {
+                const existingImage = propiedad.imagenes.find(img => img.originalname === file.originalname);
+                if (existingImage) {
+                    return existingImage.url;
+                } else {
+                    const result = await cloudinary.uploader.upload(file.path, { folder: 'propiedades/imagenes' });
+                    return result.secure_url;
+                }
             })
         );
 
-        // Subir el video a Cloudinary, si existe
-        let videoUrl = null;
+        // Subir el video a Cloudinary, pero si ya existe que no se repita
+        let videoUrl = propiedad.video;
         if (req.files['video'] && req.files['video'][0]) {
-            const videoResult = await new Promise((resolve, reject) => {
-                const uploadStream = cloudinary.uploader.upload_stream(
-                    { folder: 'propiedades/videos', resource_type: 'video' },
-                    (error, result) => {
-                        if (error) return reject(error);
-                        resolve(result.secure_url);
-                    }
-                );
-                uploadStream.end(req.files['video'][0].buffer);
-            });
-            videoUrl = videoResult;
+            const existingVideo = propiedad.video && propiedad.video.originalname === req.files['video'][0].originalname;
+            if (!existingVideo) {
+                const result = await cloudinary.uploader.upload(req.files['video'][0].path, { folder: 'propiedades/videos', resource_type: 'video' });
+                videoUrl = result.secure_url;
+            }
         }
 
-        // Crear el objeto de actualización sin el campo _id
+        // Crear el objeto de actualización sin el campo _id, NO hace falta actualizar el código de referencia( || propiedad.codigoReferencia)
         const updateData = {
             tituloPublicacion,
             descripcion,
             tipoPropiedad,
             expensas,
             ubicacion,
-            operacion,
+            venta,
+            alquiler,
             cantPisos,
             ambientes,
             dormitorios,

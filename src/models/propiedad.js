@@ -5,10 +5,9 @@ const PropiedadSchema = Schema({
     tituloPublicacion: { type: String },
     descripcion: { type: String },
     tipoPropiedad: { type: String },
-    expesnsas: { type: Boolean},
-    //location: { type: Point, coordinates: [-73.935242, 40.730610] }
-    ubicacion: { type: Object }, //direc real, direc publi, pais, prov, ciudad, barrio
-    operacion: { type: Array }, //{operacionID: 1-venta o 2-Alq, tipoOperacion, precio, moneda}
+    venta: { type: Object }, 
+    alquiler: { type: Object },    
+    ubicacion: { type: Object }, //direc real, direc publi, pais, prov, ciudad, barrio    
     cantPisos: { type: Number},
     ambientes: { type: Number},
     dormitorios: { type: Number},
@@ -22,6 +21,7 @@ const PropiedadSchema = Schema({
     servicios: { type: Array },
     estado: { type: String },
     antiguedad: { type: Number },
+    expesnsas: { type: Boolean},
     cantCocheras: { type: Number },
 });
 
