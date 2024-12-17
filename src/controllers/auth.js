@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 //login
 const login = async (req, res) => {
-    try {
+    try { 
         //busco user (tiene q existir para pooder log)
         const user = await Usuario.findOne({ email: req.body.email });
         if (!user) { 
