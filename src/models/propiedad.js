@@ -3,10 +3,11 @@ const { Schema, model } = require('mongoose');
 const PropiedadSchema = Schema({
     codigoReferencia: { type: Number},
     tituloPublicacion: { type: String },
-    descripcion: { type: String },
     tipoPropiedad: { type: String },
-    venta: { type: Object }, 
-    alquiler: { type: Object },    
+    operacion: { type: String },
+    moneda: { type: String },
+    precio: { type: Number },
+    descripcion: { type: String },    
     ubicacion: { type: Object }, //direc real, direc publi, pais, prov, ciudad, barrio    
     cantPisos: { type: Number},
     ambientes: { type: Number},

@@ -1,40 +1,40 @@
 const Propiedad = require("../models/propiedad");
 
+const getPropiedades = async (req, res) => {
+    const { limit, offset, operacion, tipo, precioMin, precioMax } = req.query;
 
-const getPropiedades = async(req, res) => {
-    const { limit, offset, operacion, tipo, precioMin, precioMax } = req.query; 
-    
     try {
         let propiedades;
         let filtros = {};
 
-        //filtros
-        //por operacion
-        if(operacion){
-            filtros["operacion.tipoOperacion"] = operacion; 
+        // Filtros
+        // Por operacion
+        if (operacion && operacion !== "todas") {
+            filtros["operacion"] = operacion;
         }
-        //tipo
-        if(tipo && tipo !== "todos"){
+        // Tipo
+        if (tipo && tipo !== "todos") {
             filtros.tipoPropiedad = tipo;
         }
-        //precio MIN
-        if(precioMin){
-            filtros["operacion.precio"] = {...filtros["operacion.precio"], $gte: Number(precioMin)};
+        // Precio MIN
+        if (precioMin) {
+            filtros.precio = { $gte: precioMin };            
         }
-        //precio MAX
-        if(precioMax){
-            filtros["operacion.precio"] = {...filtros["operacion.precio"], $lte: Number(precioMax)};
+        // Precio MAX
+        if (precioMax ) {
+            filtros.precio = { ...filtros.precio, $lte: precioMax };            
         }
 
+        // Realizar la consulta con los filtros aplicados
         propiedades = await Propiedad.find(filtros)
-        .skip(Number(offset) || 0)
-        .limit(Number(limit) || 12)
-        .exec();
+            .skip(Number(offset) || 0)
+            .limit(Number(limit) || 12)
+            .exec();
 
-        //obtengo el total de props q cumplen con los filtros (sin paginación)
+        // Obtengo el total de propiedades que cumplen con los filtros (sin paginación)
         const totPropsFiltradas = await Propiedad.countDocuments(filtros);
 
-        //envio las 12 props mas el total de las q cumplen los filtros
+        // Envío las propiedades más el total de las que cumplen los filtros
         res.status(200).json({
             totPropsFiltradas,
             propiedades

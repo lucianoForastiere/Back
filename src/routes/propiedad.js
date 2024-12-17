@@ -20,10 +20,10 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
         tituloPublicacion,
         descripcion,
         tipoPropiedad,
-        expensas,
+        operacion,
+        moneda,
+        precio,
         ubicacion,
-        venta,
-        alquiler,
         cantPisos,
         ambientes,
         dormitorios,
@@ -35,6 +35,7 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
         servicios,
         estado,
         antiguedad,
+        expensas,
         cantCocheras,
     } = JSON.parse(req.body.data); // Parsear los datos del formulario 
 
@@ -79,18 +80,16 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
         const nuevaProp = new Propiedad({
             codigoReferencia,
             tituloPublicacion,
-            descripcion,
             tipoPropiedad,
-            expensas,
+            operacion,
+            moneda,
+            precio,
+            descripcion,            
             ubicacion,
-            venta,
-            alquiler,
             cantPisos,
             ambientes,
             dormitorios,
             baños,
-            imagenes: imagenesUrls,
-            video: videoUrl,
             supCubierta,
             supSemiCub,
             supDescubierta,
@@ -98,7 +97,10 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
             servicios,
             estado,
             antiguedad,
-            cantCocheras,
+            expensas,
+            cantCocheras: cantCocheras || 0,
+            imagenes: imagenesUrls,
+            video: videoUrl,
         });
 
         // Guardar la nueva propiedad en la base de datos
@@ -123,8 +125,9 @@ router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'vide
         tipoPropiedad,
         expensas,
         ubicacion,
-        venta,
-        alquiler,
+        operacion,
+        moneda,
+        precio,
         cantPisos,
         ambientes,
         dormitorios,
@@ -138,7 +141,7 @@ router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'vide
         antiguedad,
         cantCocheras,
     } = JSON.parse(req.body.data); // Parsear los datos del formulario
-    
+
     try {
         // Buscar la propiedad por ID
         const propiedad = await Propiedad.findById(_id);
@@ -176,8 +179,9 @@ router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'vide
             tipoPropiedad,
             expensas,
             ubicacion,
-            venta,
-            alquiler,
+            operacion,
+            moneda,
+            precio,
             cantPisos,
             ambientes,
             dormitorios,
