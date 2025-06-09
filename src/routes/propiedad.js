@@ -86,14 +86,14 @@ router.post('/', upload.fields([{ name: 'imagenes' }, { name: 'video' }]), async
             precio,
             descripcion,            
             ubicacion,
-            cantPisos,
-            ambientes,
-            dormitorios,
-            baños,
-            supCubierta,
-            supSemiCub,
-            supDescubierta,
-            supTotal,
+            cantPisos: cantPisos || 0,
+            ambientes: ambientes || 0,
+            dormitorios: dormitorios || 0,
+            baños: baños || 0,
+            supCubierta : supCubierta || 0,
+            supSemiCub: supSemiCub || 0,
+            supDescubierta: supDescubierta || 0,
+            supTotal: supTotal || 0,
             servicios,
             estado,
             antiguedad,
@@ -140,6 +140,7 @@ router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'vide
         estado,
         antiguedad,
         cantCocheras,
+        estadoActual
     } = JSON.parse(req.body.data); // Parsear los datos del formulario
 
     try {
@@ -196,6 +197,7 @@ router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'vide
             estado,
             antiguedad,
             cantCocheras,
+            estadoActual
         };
 
         // Actualizar la propiedad
@@ -211,6 +213,26 @@ router.put('/editaProp/:_id', upload.fields([{ name: 'imagenes' }, { name: 'vide
     }
 });
 
+// Función para eliminar una imagen en Cloudinary
+const eliminarImagenCloudinary = async (publicId) => {
+    try {
+        console.log('Intentando eliminar la imagen con public_id:', publicId);
+
+        // Asegúrate de esperar la resolución de la promesa
+        const result = await cloudinary.uploader.destroy(publicId);
+
+        console.log('Resultado de Cloudinary:', result);
+
+        if (result.result === 'ok') {
+            console.log('Imagen eliminada correctamente.');
+        } else {
+            console.log('No se pudo eliminar la imagen. Detalles:', result.result);
+        }
+    } catch (error) {
+        console.error('Error al eliminar la imagen en Cloudinary:', error.message);
+    }
+};
+
 //elimina propiedad y eliminiar imagenes y video de cloudinary
 router.delete('/eliminaProp/:_id', async (req, res) => {
     const { _id } = req.params; 
@@ -220,14 +242,21 @@ router.delete('/eliminaProp/:_id', async (req, res) => {
         if (!propiedad) {
             return res.status(404).send("Propiedad no encontrada");
         }
-
+        
         // Eliminar las imágenes de Cloudinary
-        await Promise.all(
-            propiedad.imagenes.map((imagen) => {
-                const public_id = imagen.split('/').slice(-1)[0].split('.')[0];
-                return cloudinary.uploader.destroy(public_id);
-            })
-        );
+        if (propiedad.imagenes && propiedad.imagenes.length > 0) {
+            for (const imagen of propiedad.imagenes) {
+                // Extraer el public_id correcto
+                const public_id = decodeURIComponent(
+                    imagen
+                      .split('/upload/')[1]  // Obtener la parte después de "upload/"
+                      .replace(/v\d+\//, '') // Eliminar la versión "v123456789/"
+                      .split('.')[0]         // Eliminar la extensión del archivo
+                  );        // Eliminar la extensión del archivo
+                //console.log('Public ID extraído:', public_id);
+                await eliminarImagenCloudinary(public_id);
+            }
+        }
 
         // Eliminar el video de Cloudinary
         if (propiedad.video) {

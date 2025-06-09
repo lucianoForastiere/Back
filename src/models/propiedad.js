@@ -24,6 +24,7 @@ const PropiedadSchema = Schema({
     antiguedad: { type: Number },
     expesnsas: { type: Boolean},
     cantCocheras: { type: Number },
+    estadoActual: { type: String },
 });
 
 module.exports = model("Propiedades", PropiedadSchema);
